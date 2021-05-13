@@ -9,14 +9,17 @@ namespace FileSharingSite.Models
     public class FileUploadModel
     {
         [Display(Name = "Название")]
-        [StringLength(30)]
+        [Required(ErrorMessage = "Укажите название")]
+        [StringLength(30, ErrorMessage = "Длина не может превышать 30 символов.")]
         public string fileName { get; set; }
         [Display(Name = "Аннотация")]
-        [StringLength(100)]
+        [StringLength(100, ErrorMessage = "Длина не может превышать 100 символов.")]
         public string Annotation { get; set; }
         public SelectList Catalogs { get; set; }
-        public string CatalogName { get; set; }
-        
+
+        [Required(ErrorMessage = "Необходимо выбрать каталог")]
+        public string CatalogName { get; set; } 
+        public string filePath { get; set; }
         public int FileId { get; set; }
     }
 }

@@ -159,7 +159,7 @@ namespace FileSharingSite.Controllers
             IQueryable<string> genreQuery = from m in _context.Catalog
                                             orderby m.Name
                                             select m.Name;
-            var model = new FileUploadModel { Catalogs = new SelectList(genreQuery.Distinct().ToList()) };
+            var model = new FileUploadModel { Catalogs = new SelectList(genreQuery.Distinct().ToList()),filePath=""};
             return View(model);
         }
 
@@ -170,33 +170,44 @@ namespace FileSharingSite.Controllers
         [RequestSizeLimit(2147483648)]
         public async Task<IActionResult> Create(IFormFile physicalFile,  FileUploadModel uploadModel)
         {
-            var catalog = await _context.Catalog.FirstOrDefaultAsync(m => m.Name == uploadModel.CatalogName);
-            var user = await _context.User.FirstOrDefaultAsync(m => m.Login == User.Identity.Name);
-            if ( physicalFile != null && uploadModel.CatalogName!= null && uploadModel.fileName!=null)
+            IQueryable<string> genreQuery = from m in _context.Catalog
+                                            orderby m.Name
+                                            select m.Name;
+            if (ModelState.IsValid)
             {
-                var dir = CreateFilePath(physicalFile);
-                var collision = await _context.File.FirstOrDefaultAsync(m => m.FilePath == dir);
-                var file = new FileModel
+                var catalog = await _context.Catalog.FirstOrDefaultAsync(m => m.Name == uploadModel.CatalogName);
+                var user = await _context.User.FirstOrDefaultAsync(m => m.Login == User.Identity.Name);
+                if (physicalFile != null && uploadModel.CatalogName != null && uploadModel.fileName != null)
                 {
-                    Name = uploadModel.fileName,
-                    Annotation = uploadModel.Annotation,
-                    UploadDate = DateTime.Now,
-                    CatalogId = catalog.Id,
-                    FilePath = dir,
-                    UserId = user.Id,
-                    Size = GetFileSize(physicalFile)
-                };
-                if(collision == null)
-                {
-                    using (var fileStream = new FileStream(dir, FileMode.Create, FileAccess.Write))
+                    var dir = CreateFilePath(physicalFile);
+                    var collision = await _context.File.FirstOrDefaultAsync(m => m.FilePath == dir);
+                    var file = new FileModel
                     {
-                        physicalFile.CopyTo(fileStream);
+                        Name = uploadModel.fileName,
+                        Annotation = uploadModel.Annotation,
+                        UploadDate = DateTime.Now,
+                        CatalogId = catalog.Id,
+                        FilePath = dir,
+                        UserId = user.Id,
+                        Size = GetFileSize(physicalFile)
+                    };
+                    if (collision == null)
+                    {
+                        using (var fileStream = new FileStream(dir, FileMode.Create, FileAccess.Write))
+                        {
+                            physicalFile.CopyTo(fileStream);
+                        }
                     }
+                    _context.File.Add(file);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
                 }
-                _context.File.Add(file);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
             }
+            if(physicalFile!=null)
+            {
+                uploadModel.filePath = physicalFile.FileName;
+            }
+            uploadModel.Catalogs = new SelectList(genreQuery.Distinct().ToList());
             return View(uploadModel);
         }
 
@@ -223,7 +234,8 @@ namespace FileSharingSite.Controllers
                     fileName = file.Name,
                     CatalogName = catalog.Name,
                     Catalogs = new SelectList(genreQuery.Distinct().ToList()),
-                    FileId = file.Id
+                    FileId = file.Id,
+                    filePath = ""
                 };
                 return View(fileModel);
             }
@@ -236,43 +248,54 @@ namespace FileSharingSite.Controllers
         [RequestSizeLimit(2147483648)]
         public async Task<IActionResult> Edit(IFormFile physicalFile, FileUploadModel uploadModel)
         {
-            var file = await _context.File.FirstOrDefaultAsync(m=>m.Id == uploadModel.FileId);
-            var catalog = await _context.Catalog.FirstOrDefaultAsync(m => m.Name == uploadModel.CatalogName);
-            var user = await _context.User.FirstOrDefaultAsync(m => m.Login == User.Identity.Name);
-            if (uploadModel.CatalogName != null && uploadModel.fileName != null)
+            IQueryable<string> genreQuery = from m in _context.Catalog
+                                            orderby m.Name
+                                            select m.Name;
+            if (ModelState.IsValid)
             {
-                if(physicalFile!= null)
+                var file = await _context.File.FirstOrDefaultAsync(m => m.Id == uploadModel.FileId);
+                var catalog = await _context.Catalog.FirstOrDefaultAsync(m => m.Name == uploadModel.CatalogName);
+                var user = await _context.User.FirstOrDefaultAsync(m => m.Login == User.Identity.Name);
+                if (uploadModel.CatalogName != null && uploadModel.fileName != null)
                 {
-                    int match = 0;
-                    foreach (var item in _context.File)
+                    if (physicalFile != null)
                     {
-                        if (item.Id != file.Id && item.FilePath == file.FilePath)
-                            match++;
-                    }
-                    if (match == 0)
-                    {
-                        var fileInfo = new FileInfo(file.FilePath);
-                        fileInfo.Delete();
-                    }
-                    var dir = CreateFilePath(physicalFile);
-                    var collision = await _context.File.FirstOrDefaultAsync(m => m.FilePath == dir);
-                    if (collision == null)
-                    {
-                        using (var fileStream = new FileStream(dir, FileMode.Create, FileAccess.Write))
+                        int match = 0;
+                        foreach (var item in _context.File)
                         {
-                            physicalFile.CopyTo(fileStream);
+                            if (item.Id != file.Id && item.FilePath == file.FilePath)
+                                match++;
                         }
+                        if (match == 0)
+                        {
+                            var fileInfo = new FileInfo(file.FilePath);
+                            fileInfo.Delete();
+                        }
+                        var dir = CreateFilePath(physicalFile);
+                        var collision = await _context.File.FirstOrDefaultAsync(m => m.FilePath == dir);
+                        if (collision == null)
+                        {
+                            using (var fileStream = new FileStream(dir, FileMode.Create, FileAccess.Write))
+                            {
+                                physicalFile.CopyTo(fileStream);
+                            }
+                        }
+                        file.FilePath = dir;
+                        file.Size = GetFileSize(physicalFile);
                     }
-                    file.FilePath = dir;
-                    file.Size = GetFileSize(physicalFile);
+                    file.CatalogId = catalog.Id;
+                    file.Name = uploadModel.fileName;
+                    file.Annotation = uploadModel.Annotation;
+                    _context.File.Update(file);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(MyFiles));
                 }
-                file.CatalogId = catalog.Id;
-                file.Name = uploadModel.fileName;
-                file.Annotation = uploadModel.Annotation;
-                _context.File.Update(file);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(MyFiles));
             }
+            if (physicalFile != null)
+            {
+                uploadModel.filePath = physicalFile.FileName;
+            }
+            uploadModel.Catalogs = new SelectList(genreQuery.Distinct().ToList());
             return View(uploadModel);
         }
 
