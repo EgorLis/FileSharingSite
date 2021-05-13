@@ -1,0 +1,59 @@
+﻿@model FileSharingSite.Models.FileUploadModel
+@using System.IO
+
+@{
+    ViewData["Title"] = "Редактирование файла";
+}
+
+<h1> Редактировать файл </h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-controller="FileManager" asp-action="Edit"
+              enctype="multipart/form-data" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="FileId" />
+            <div class="form-group">
+                <label asp-for="fileName" class="control-label" name="text"></label>
+                <input asp-for="fileName" class="form-control" id="nameInput" />
+                <span asp-validation-for="fileName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Annotation" class="control-label" name="text"></label>
+                <textarea asp-for="Annotation" class="form-control" cols="40" rows="3"></textarea>
+                <span asp-validation-for="Annotation" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <select asp-for="CatalogName" asp-items="Model.Catalogs">
+                    <option value="">All</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <input onchange="ValidateSize(this)" type="file" name="physicalFile" />
+                <script>
+                    function ValidateSize(file) {
+                        if (file.files[0] != null) {
+                            var FileSize = file.files[0].size; // in MiB
+                            var name = file.files[0].name;
+                            document.getElementById('nameInput').value = name;
+                            if (name.length > 30) {
+                                alert('Имя не может быть больше 30 символов');
+                                $(file).val('');
+                            }
+                            if (FileSize > 2147483648) {
+                                alert('Файл не может превышать 2Гб');
+                                $(file).val(''); //for clearing with Jquery
+                            } else {
+
+                            }
+                        }
+                    }
+                </script>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Изменить" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>

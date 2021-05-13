@@ -1,0 +1,70 @@
+﻿
+@model FileSharingSite.Models.FilesSearchModel
+
+@{
+    ViewData["Title"] = "Файлы";
+}
+
+<h1> Файлы </h1>
+
+
+<form asp-controller="FileManager" asp-action="Index" method="get">
+    <p>
+
+        <select asp-for="CatalogName" asp-items="Model.Catalogs">
+            <option value="">All</option>
+        </select>
+
+        Название: <input type="text" asp-for="SearchString" />
+        <input type="submit" value="Filter" />
+    </p>
+</form>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Files[0].Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Files[0].Catalog)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Files[0].Size)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Files[0].UploadDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Files[0].User)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Files)
+        {
+        <tr>
+            <td>
+                @Html.DisplayFor(model => item.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(model => item.Catalog.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(model => item.Size)
+            </td>
+            <td>
+                @Html.DisplayFor(model => item.UploadDate)
+            </td>
+            <td>
+                @Html.DisplayFor(model => item.User.Login)
+            </td>
+            <td>
+                <a asp-action="Download" asp-route-id="@item.Id">Скачать</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Подробнее</a>
+            </td>
+        </tr>
+        }
+    </tbody>
+</table>
