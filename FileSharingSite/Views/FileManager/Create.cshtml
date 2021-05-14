@@ -5,6 +5,12 @@
     ViewData["Title"] = "Добавить файл";
 }
 
+@section scripts{
+
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+}
+
 <h1> Загрузка файла </h1>
 
 <h4>Файл</h4>
@@ -31,7 +37,7 @@
                 <span asp-validation-for="CatalogName" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input onchange="ValidateSize(this)" type="file" name="physicalFile" value=@Model.filePath/>
+                <input onchange="ValidateSize(this)" type="file" name="physicalFile" value=@Model.filePath />
                 <script>
                     function ValidateSize(file) {
                         if (file.files[0] != null) {

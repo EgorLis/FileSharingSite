@@ -9,8 +9,8 @@ namespace FileSharingSite.Models
     public class FileUploadModel
     {
         [Display(Name = "Название")]
-        [Required(ErrorMessage = "Укажите название")]
-        [StringLength(30, ErrorMessage = "Длина не может превышать 30 символов.")]
+        [Required(ErrorMessage = "Не указано название")]
+        [StringLength(30 , MinimumLength = 5,ErrorMessage ="Длина должна быть не меньше 5")]
         public string fileName { get; set; }
         [Display(Name = "Аннотация")]
         [StringLength(100, ErrorMessage = "Длина не может превышать 100 символов.")]

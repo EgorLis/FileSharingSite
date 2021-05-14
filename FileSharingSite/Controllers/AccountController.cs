@@ -20,7 +20,8 @@ namespace AuthApp.Controllers
         [HttpGet]
         public IActionResult Login()
         {
-            return View();
+            var login = new LoginModel { ErrorMessage = "" };
+            return View(login);
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -42,7 +43,8 @@ namespace AuthApp.Controllers
         [HttpGet]
         public IActionResult Register()
         {
-            return View();
+            var register = new RegisterModel { ErrorMessage = "" };
+            return View(register);
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -62,7 +64,7 @@ namespace AuthApp.Controllers
                     return RedirectToAction("Index", "FileManager");
                 }
                 else
-                    ModelState.AddModelError("", "Некорректные логин и(или) пароль");
+                   model.ErrorMessage = "Пользователь с таким именем уже существует.";
             }
             return View(model);
         }
