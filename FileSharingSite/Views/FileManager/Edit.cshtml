@@ -43,12 +43,15 @@
                         if (file.files[0] != null) {
                             var FileSize = file.files[0].size; // in MiB
                             var name = file.files[0].name;
-                            document.getElementById('nameInput').value = name;
-                            if (FileSize > 2147483648) {
+                            if (name.length > 30) {
+                                alert('Имя не может быть больше 30 символов');
+                                $(file).val('');
+                            }
+                            else if (FileSize > 2147483648) {
                                 alert('Файл не может превышать 2Гб');
                                 $(file).val(''); //for clearing with Jquery
                             } else {
-
+                                document.getElementById('nameInput').value = name;
                             }
                         }
                     }

@@ -9,8 +9,8 @@ namespace FileSharingSite.Models
     public class FileUploadModel
     {
         [Display(Name = "Название")]
-        [Required(ErrorMessage = "Не указано название")]
-        [StringLength(30 , MinimumLength = 5,ErrorMessage ="Длина должна быть не меньше 5")]
+        [Required(ErrorMessage = "Укажите название")]
+        [StringLength(30, MinimumLength = 5, ErrorMessage = "Длина не 5 символов, не более 30.")]
         public string fileName { get; set; }
         [Display(Name = "Аннотация")]
         [StringLength(100, ErrorMessage = "Длина не может превышать 100 символов.")]
@@ -18,7 +18,7 @@ namespace FileSharingSite.Models
         public SelectList Catalogs { get; set; }
 
         [Required(ErrorMessage = "Необходимо выбрать каталог")]
-        public string CatalogName { get; set; } 
+        public string CatalogName { get; set; }
         public string filePath { get; set; }
         public int FileId { get; set; }
     }
